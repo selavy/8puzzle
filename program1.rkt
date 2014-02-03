@@ -1,41 +1,5 @@
 #lang racket
 
-(define test-state '((1 2 3)
-                     (4 5 6)
-                     (0 7 8)))
-
-(define blank-in-0 '((0 1 2)
-                     (3 4 5)
-                     (6 7 8)))
-
-(define blank-in-1 '((1 0 2)
-                     (3 4 5)
-                     (6 7 8)))
-
-(define blank-in-2 '((1 2 0)
-                     (3 4 5)
-                     (6 7 8)))
-
-(define blank-in-3 '((1 2 3)
-                     (0 4 5)
-                     (6 7 8)))
-
-(define blank-in-4 '((1 2 3)
-                     (4 0 5)
-                     (6 7 8)))
-
-(define blank-in-5 '((1 2 3)
-                     (4 5 0)
-                     (6 7 8)))
-
-(define blank-in-6 '((1 2 3)
-                     (4 5 6)
-                     (0 7 8)))
-
-(define blank-in-7 '((1 2 3)
-                     (4 5 6)
-                     (7 0 8)))
-
 (define goal-state '((1 2 3)
                      (4 5 6)
                      (7 8 0)))

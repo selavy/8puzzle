@@ -190,6 +190,38 @@
 
 (define (null-heuristic state) 0)
 
+(define (heuristic state)
+	(define (manh-dst val pos)
+		(if (eq? val 0) 0
+		(let* [(correctpos (proper-pos val)) (posx (car pos)) (posy (cdr pos)) (corx (car correctpos)) (cory (cdr correctpos))]
+		      (+ (abs (- posx corx)) (abs (- posy cory)))
+		))
+	)
+
+	(define retVal 0)
+	(foldl + 0 (for/list ([i 3])
+	     (foldl + 0 (for/list ([j 3])
+	     	  (let [(v (state-elem state i j))]
+		       (manh-dst v (cons i j))
+		  )
+	     ))
+	))
+)
+
+(define (proper-pos i)
+	(cond
+	[(eq? i 0) (cons 2 2)]
+	[(eq? i 1) (cons 0 0)]
+	[(eq? i 2) (cons 0 1)]
+	[(eq? i 3) (cons 0 2)]
+	[(eq? i 4) (cons 1 0)]
+	[(eq? i 5) (cons 1 1)]
+	[(eq? i 6) (cons 1 2)]
+	[(eq? i 7) (cons 2 0)]
+	[else (cons 2 1)]
+	)
+)
+
 (require data/heap)
 (require (lib "trace.ss"))
 ; For Heap can use:
@@ -226,7 +258,8 @@
   (define (add-SAW-to-heap SAW prev)
     ;debugging
     ;(printf "Adding a SAW...\n")
-    (let* [(weight (car (cdr (cdr SAW)))) (h (null-heuristic (car SAW))) (action (car (cdr SAW)))]
+    ;(let* [(weight (car (cdr (cdr SAW)))) (h (null-heuristic (car SAW))) (action (car (cdr SAW)))]
+    (let* [(weight (car (cdr (cdr SAW)))) (h (heuristic (car SAW))) (action (car (cdr SAW)))]
       ;(printf "weight ~a.\n" weight)
       (let [(g (if (null? prev) weight (+ weight (node-g prev))))]
         (define f (+ g h))
@@ -244,8 +277,8 @@
   ; begin tile-puzzle
 
   ; add initial state to the queue
-  (heap-add! Q (node startS '() 'start 0 0 (null-heuristic startS)))
-  
+  (heap-add! Q (node startS '() 'start 0 0 (heuristic startS))) ;(null-heuristic startS)))
+
   (let loop ()
     ;(define curr (struct-copy node (heap-min Q)))    ; curr = min node in queue
     (define curr (heap-min Q))
@@ -306,7 +339,7 @@
                 (4 5 6)
                 (8 7 0)))
 
-(tile-puzzle test5 goal-state)
+(tile-puzzle test1 goal-state)
 ;(print-state goal-state)
 ;(define (goal? state) (is-goal? state goal-state))
 ;(goal? '((1 2 3) (4 5 6) (7 8 0)))

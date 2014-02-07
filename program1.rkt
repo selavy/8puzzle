@@ -224,16 +224,9 @@
     [else (list (print-solution (node-pred anode)) (list (node-move anode) (node-state anode) (node-f anode) (node-g anode) (node-h anode)))]
     ))
   (define (add-SAW-to-heap SAW prev)
-    ;debugging
-    ;(printf "Adding a SAW...\n")
     (let* [(weight (car (cdr (cdr SAW)))) (h (null-heuristic (car SAW))) (action (car (cdr SAW)))]
-      ;(printf "weight ~a.\n" weight)
       (let [(g (if (null? prev) weight (+ weight (node-g prev))))]
         (define f (+ g h))
-        ;(printf "f = ~a.\n" f)
-        ;(printf "pred weight = ~a.\n" (car (cdr (cdr SAW))))
-        ;(printf "pred =\n")
-        ;(print-state (node-state prev))
         (node (car SAW) prev action f g h) 
       )))
   (define (get-hash state)
@@ -247,35 +240,21 @@
   (heap-add! Q (node startS '() 'start 0 0 (null-heuristic startS)))
   
   (let loop ()
-    ;(define curr (struct-copy node (heap-min Q)))    ; curr = min node in queue
     (define curr (heap-min Q))
     (hash-set! ht (get-hash (node-state curr)) curr) ; add node to the hash
     (heap-remove-min! Q)                             ; remove the node from the queue
-    
-    ; debugging 
-    ;(printf "curr node => \n")
-    ;(print-state (node-state curr))
-       
     (cond 
       [(goal? (node-state curr)) (print-solution curr)]
       [else
        (let ([SAWs (filter not-in-hash? (move (node-state curr)))])
          (define (add-SAW SAW) (add-SAW-to-heap SAW curr)) 
          (heap-add-all! Q (map add-SAW SAWs))
-           ;(printf "after heap-add-all!, elements in queue: ~a.\n" (heap-count Q))
-           ;(printf "length of SAWs = ~a.\n" (length SAWs))
-           ) ; end let
-       (if (= (heap-count Q) 0) "failure" (loop))
-       ]
+         ) ; end let
+       (if (= (heap-count Q) 0) "no solution" (loop))
+       ] ; end else
       ) ; loop if the queue is not empty, else we didn't find a solution
     ) 
   )
-
-;(define (get-hash state)
-; (+ (* 3 (state-elem state 0 0)) (* 5 (state-elem state 0 1)) (* 7 (state-elem state 0 2))
-;   (* 11 (state-elem state 1 0)) (* 13 (state-elem state 1 1)) (* 17 (state-elem state 1 2))
-;  (* 19 (state-elem state 2 0)) (* 23 (state-elem state 2 1)) (* 29 (state-elem state 2 2)))
-;)
 
 ;(trace tile-puzzle)
 (define test1 '((1 2 3)
@@ -306,8 +285,5 @@
                 (4 5 6)
                 (8 7 0)))
 
-(tile-puzzle test5 goal-state)
-;(print-state goal-state)
-;(define (goal? state) (is-goal? state goal-state))
-;(goal? '((1 2 3) (4 5 6) (7 8 0)))
+(tile-puzzle test1 goal-state)
 

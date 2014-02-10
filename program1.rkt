@@ -37,7 +37,7 @@
         )
  )
 
-; return (State, Action, Weight) for if blank is in top right
+; return (State, Action, Weight) for if blank is in top middle
 (define (square1 state)
   (list (list (list (list (state-elem state 0 0) (state-elem state 1 1) (state-elem state 0 2) )
                     (list (state-elem state 1 0) (state-elem state 0 1) (state-elem state 1 2) )
@@ -48,16 +48,16 @@
                     (list (state-elem state 1 0) (state-elem state 1 1) (state-elem state 1 2) )
                     (list (state-elem state 2 0) (state-elem state 2 1) (state-elem state 2 2) )
               )
-              (list (state-elem state 0 0) 'L) 1)
+              (list (state-elem state 0 0) 'R) 1)
         (list (list (list (state-elem state 0 0) (state-elem state 0 2) (state-elem state 0 1) )
                     (list (state-elem state 1 0) (state-elem state 1 1) (state-elem state 1 2) )
                     (list (state-elem state 2 0) (state-elem state 2 1) (state-elem state 2 2) )
               )
-              (list (state-elem state 0 2) 'R) 1)
+              (list (state-elem state 0 2) 'L) 1)
         )
  )
 
-; return (State, Action, Weight) for if blank is in top middle
+; return (State, Action, Weight) for if blank is in top right
 (define (square2 state)
   (list (list (list (list (state-elem state 0 0) (state-elem state 0 1) (state-elem state 1 2) )
                     (list (state-elem state 1 0) (state-elem state 1 1) (state-elem state 0 2) )
@@ -256,7 +256,7 @@
     [else (list (print-solution (node-pred anode)) (list (node-move anode) (node-state anode) (node-f anode) (node-g anode) (node-h anode)))]
     ))
   (define (add-SAW-to-heap SAW prev)
-    (let* [(weight (car (cdr (cdr SAW)))) (h (null-heuristic (car SAW))) (action (car (cdr SAW)))]
+    (let* [(weight (car (cdr (cdr SAW)))) (h (heuristic (car SAW))) (action (car (cdr SAW)))]
       (let [(g (if (null? prev) weight (+ weight (node-g prev))))]
         (define f (+ g h))
         (node (car SAW) prev action f g h) 
@@ -269,7 +269,7 @@
   ; begin tile-puzzle
 
   ; add initial state to the queue
-  (heap-add! Q (node startS '() 'start 0 0 (heuristic startS))) ;(null-heuristic startS)))
+  (heap-add! Q (node startS '() 'start 0 0 (heuristic startS)))
 
   (let loop ()
     (define curr (heap-min Q))
@@ -317,4 +317,4 @@
                 (4 5 6)
                 (8 7 0)))
 
-(tile-puzzle test1 goal-state)
+(tile-puzzle test3 goal-state)

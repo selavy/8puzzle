@@ -269,7 +269,8 @@
   ; begin tile-puzzle
 
   ; add initial state to the queue
-  (heap-add! Q (node startS '() 'start 0 0 (heuristic startS)))
+  (let [(h (heuristic startS))]
+  (heap-add! Q (node startS '() 'start h 0 h)))
 
   (let loop ()
     (define curr (heap-min Q))

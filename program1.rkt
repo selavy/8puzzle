@@ -1,5 +1,9 @@
 #lang racket
 
+;; Choose heuristic function on lines 252-3
+;; null-heuristic always return 0
+;; heuristic is manhattan distance
+
 (define goal-state '((1 2 3)
                      (4 5 6)
                      (7 8 0)))
@@ -188,6 +192,20 @@
         )
  )
 
+(define (proper-pos i)
+	(cond
+	[(eq? i 0) (cons 2 2)]
+	[(eq? i 1) (cons 0 0)]
+	[(eq? i 2) (cons 0 1)]
+	[(eq? i 3) (cons 0 2)]
+	[(eq? i 4) (cons 1 0)]
+	[(eq? i 5) (cons 1 1)]
+	[(eq? i 6) (cons 1 2)]
+	[(eq? i 7) (cons 2 0)]
+	[else (cons 2 1)]
+	)
+)
+
 (define (null-heuristic state) 0)
 
 (define (heuristic state)
@@ -206,20 +224,6 @@
 		  )
 	     ))
 	))
-)
-
-(define (proper-pos i)
-	(cond
-	[(eq? i 0) (cons 2 2)]
-	[(eq? i 1) (cons 0 0)]
-	[(eq? i 2) (cons 0 1)]
-	[(eq? i 3) (cons 0 2)]
-	[(eq? i 4) (cons 1 0)]
-	[(eq? i 5) (cons 1 1)]
-	[(eq? i 6) (cons 1 2)]
-	[(eq? i 7) (cons 2 0)]
-	[else (cons 2 1)]
-	)
 )
 
 (require data/heap)
@@ -241,12 +245,21 @@
       )
     (printf "\n")
     ))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;   Choose heuristic function to use               ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  (define heuristic_function heuristic)
+  ;(define heuristic_function null-heuristic)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
   (define (goal? state) (equal? state goal-state))
   (struct node (state pred move f g h))
   (define (node<=? x y)
     (<= (node-f x) (node-f y)))
   (define Q (make-heap node<=?))
   (define ht (make-hash))
+  (define counter 0)
   (define (not-in-hash? SAW) 
     (eq? #f (hash-ref ht (get-hash (car SAW)) #f)))
   (define (print-solution anode)
@@ -256,7 +269,7 @@
     [else (list (print-solution (node-pred anode)) (list (node-move anode) (node-state anode) (node-f anode) (node-g anode) (node-h anode)))]
     ))
   (define (add-SAW-to-heap SAW prev)
-    (let* [(weight (car (cdr (cdr SAW)))) (h (heuristic (car SAW))) (action (car (cdr SAW)))]
+    (let* [(weight (car (cdr (cdr SAW)))) (h (heuristic_function (car SAW))) (action (car (cdr SAW)))]
       (let [(g (if (null? prev) weight (+ weight (node-g prev))))]
         (define f (+ g h))
         (node (car SAW) prev action f g h) 
@@ -266,56 +279,56 @@
               (integer->char (state-elem state 1 0)) (integer->char (state-elem state 1 1)) (integer->char (state-elem state 1 2))
               (integer->char (state-elem state 2 0)) (integer->char (state-elem state 2 1)) (integer->char (state-elem state 2 2)))
       )
+  
+  (define (no-solution counter) (printf "Nodes extracted: ~a\n" counter) "no solution")
   ; begin tile-puzzle
 
   ; add initial state to the queue
-  (let [(h (heuristic startS))]
+  (let [(h (heuristic_function startS))]
   (heap-add! Q (node startS '() 'start h 0 h)))
 
   (let loop ()
     (define curr (heap-min Q))
     (hash-set! ht (get-hash (node-state curr)) curr) ; add node to the hash
     (heap-remove-min! Q)                             ; remove the node from the queue
+    (set! counter (+ 1 counter))
     (cond 
-      [(goal? (node-state curr)) (print-solution curr)]
+      [(goal? (node-state curr)) (printf "Nodes extracted: ~a\n" counter) (print-solution curr)]
       [else
        (let ([SAWs (filter not-in-hash? (move (node-state curr)))])
          (define (add-SAW SAW) (add-SAW-to-heap SAW curr)) 
          (heap-add-all! Q (map add-SAW SAWs))
          ) ; end let
-       (if (= (heap-count Q) 0) "no solution" (loop))
+       (if (= (heap-count Q) 0) (no-solution counter) (loop))
        ] ; end else
       ) ; loop if the queue is not empty, else we didn't find a solution
     ) 
   )
 
 ;(trace tile-puzzle)
-(define test1 '((1 2 3)
-                (4 5 6)
-                (7 0 8)))
-
-(define test2 '((1 2 3)
-                (4 5 6)
-                (0 7 8)))
-
-(define test3 '((6 4 2)
+(define test1 '((6 4 2)
                 (1 5 3)
                 (7 0 8)))
 
-(define test4 '((6 4 2)
+(define test2 '((6 4 2)
                 (8 5 3)
                 (1 0 7)))
 
-(define test5 '((6 4 7)
+(define test3 '((6 4 7)
                 (8 5 0)
                 (3 2 1)))
 
-(define test6 '((8 0 7)
+(define test4 '((8 0 7)
                 (6 5 4)
                 (3 2 1)))
 
-(define test7 '((1 2 3)
+(define test5 '((1 2 3)
                 (4 5 6)
                 (8 7 0)))
 
+
+(tile-puzzle test1 goal-state)
+(tile-puzzle test2 goal-state)
 (tile-puzzle test3 goal-state)
+(tile-puzzle test4 goal-state)
+(tile-puzzle test5 goal-state)

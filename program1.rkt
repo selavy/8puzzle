@@ -254,7 +254,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
   (define (goal? state) (equal? state goal-state))
-  (struct node (state pred move f g h))
+  (struct node (state pred move g h f))
   (define (node<=? x y)
     (<= (node-f x) (node-f y)))
   (define Q (make-heap node<=?))
@@ -265,27 +265,27 @@
   (define (print-solution anode)
     (cond 
     [(null? anode) ] ; return nothing
-    [(null? (node-pred anode)) (list 'start (node-state anode) (node-f anode) (node-g anode) (node-h anode))]
-    [else (list (print-solution (node-pred anode)) (list (node-move anode) (node-state anode) (node-f anode) (node-g anode) (node-h anode)))]
+    [(null? (node-pred anode)) (list 'start (node-state anode) (node-g anode) (node-h anode) (node-f anode))]
+    [else (list (print-solution (node-pred anode)) (list (node-move anode) (node-state anode) (node-g anode) (node-h anode) (node-f anode)))]
     ))
   (define (add-SAW-to-heap SAW prev)
     (let* [(weight (car (cdr (cdr SAW)))) (h (heuristic_function (car SAW))) (action (car (cdr SAW)))]
       (let [(g (if (null? prev) weight (+ weight (node-g prev))))]
         (define f (+ g h))
-        (node (car SAW) prev action f g h) 
+        (node (car SAW) prev action g h f) 
       )))
-  (define (get-hash state)
-      (string (integer->char (state-elem state 0 0)) (integer->char (state-elem state 0 1)) (integer->char (state-elem state 0 2))
-              (integer->char (state-elem state 1 0)) (integer->char (state-elem state 1 1)) (integer->char (state-elem state 1 2))
-              (integer->char (state-elem state 2 0)) (integer->char (state-elem state 2 1)) (integer->char (state-elem state 2 2)))
-      )
+  (define (get-hash state) state)
+      ;(string (integer->char (state-elem state 0 0)) (integer->char (state-elem state 0 1)) (integer->char (state-elem state 0 2))
+      ;        (integer->char (state-elem state 1 0)) (integer->char (state-elem state 1 1)) (integer->char (state-elem state 1 2))
+      ;        (integer->char (state-elem state 2 0)) (integer->char (state-elem state 2 1)) (integer->char (state-elem state 2 2)))
+      ;)
   
   (define (no-solution counter) (printf "Nodes extracted: ~a\n" counter) "no solution")
   ; begin tile-puzzle
 
   ; add initial state to the queue
   (let [(h (heuristic_function startS))]
-  (heap-add! Q (node startS '() 'start h 0 h)))
+  (heap-add! Q (node startS '() 'start 0 h h)))
 
   (let loop ()
     (define curr (heap-min Q))
